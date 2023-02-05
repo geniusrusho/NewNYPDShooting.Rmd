@@ -1,0 +1,123 @@
+---
+title: "NYPD Shooting Project Data Analysis"
+author: "Maher Ali Rusho"
+date: "2023-02-05"
+output:
+  html_document: default
+  pdf_document: default
+---
+<h2>Introduction </h2>
+<b> The NYPD Shooting Data is one of the famous dataset for a Data Science begineer, The New-york police Department keep a collection of all the shooting incidents from 2006 upto the last date .In  this r document , i'm going to visualize and  adress some reserch questions like- 1)Which county of new-york has it's most number of shooting incidents 2) Which time or hour  does New-york face more criminal activities 3) plot between NYPD current boroughs and it's perentage etc</b>
+
+<h3> Importing libraries </h3>
+```{r}
+library(tidyverse)
+library(lubridate)
+library(plotly)
+library(ggplot2)
+library(DT)
+```
+#Putting and reading urls  to download .csv data from Data.Gov site 
+```{r}
+url_in <- read.csv("https://raw.githubusercontent.com/irene908/DATA-607/master/NYPD_Shooting_Incident_Data__Year_To_Date_.csv")
+head(url_in)
+DT::datatable(url_in)
+```
+#Cleanning and reducing dimwntion for further analysis
+```{r}
+dim(url_in)
+```
+<h2> Checking Columns of the data</h2>
+```{r}
+colnames(url_in)
+```
+<h5>But since every columns are not even need for our analysis and extra columns can also increase the bias of the data</h5>
+<h3>Removing columns and making correct Data table<h3>
+
+
+```{r removing columns}
+removing_colnames <- c("X_COORD_CD", "Y_COORD_CD", "Lon_Lat")
+head(url_in)
+#The corrected new data table after remving nunecessary columns
+datatable(url_in)
+
+```
+```{r selecting columns}
+#selecting necessary columns
+NYPD_current = url_in %>% select(INCIDENT_KEY, 
+                   OCCUR_DATE,
+                   OCCUR_TIME,
+                   BORO, 
+                   STATISTICAL_MURDER_FLAG,
+                   PERP_AGE_GROUP,
+                   PERP_SEX,
+                   PERP_RACE,
+                   VIC_AGE_GROUP,
+                   VIC_SEX,
+                   VIC_RACE,
+                   Latitude,
+                   Longitude)
+```
+
+##Summarize and find the data type
+Let's summarize the data 
+```{r}
+summary(NYPD_current)
+str(NYPD_current)
+```
+```{r}
+glimpse(NYPD_current) 
+```
+<h3> current situation </h3>
+first we have to generate the current situation,,, We must count the borough name to give an idea of the shooting rate in the borough,, So we must install kable() funtion a method to generate a table against the given input 
+ugh)
+```{r}
+library(knitr)
+NYPD_current_borough <- table(NYPD_current$BORO)
+NYPD_current_borough <- as.data.frame(NYPD_current_borough)
+NYPD_current_borough$Percent <- round((NYPD_current_borough$Freq / sum(NYPD_current_borough$Freq)*100),2)
+kable(NYPD_current_borough)
+```
+Now let's do some visualizations of data,,
+use plot function to visualize it..we have  to use the genralized  model to solve the  research question about finding the boxplot <b>NYPD_current_borough criminal attack frequency</b> VS <b>.NYPD_current_borough criminal attack percentage{%}</b>
+```{r}
+boxplot(NYPD_current_borough,NYPD_current_borough$Percent)
+```
+
+<h3> Methodology of the analysis </h3>
+<b>We have to find the visualization about the research title <b>Which county of New-York suffers more in Shooting incidents .... Let find the visualization of <b> "County of New York City"</b> VS <b> "Count of shooting Incidents"</b>
+```{r}
+NYC_df <- read.csv("https://gist.githubusercontent.com/Zach-Ziyi-Liu/52d2b7aeebab13d3ebc12105051e32b9/raw/63f228daaae389f5ddfa8b78a2ef3686ff8b6770/NYPD_Shooting_Incident_Data__Historic_.csv")
+scaler_vector <- c("OCCUR_DATE","BORO","LOCATION_DESC","PERP_AGE_GROUP","PERP_SEX","PERP_RACE","VIC_AGE_GROUP","VIC_SEX","VIC_RACE","Lon_Lat")
+```
+
+```{r}
+NYC_df <- ggplot(NYPD_current, aes(x = BORO)) +
+  geom_bar() +
+  labs(title = " New York Police Shooting Incident",
+       x = "County of New York City",
+       y = "Count of shooting Incidents") +
+  theme_minimal()
+NYC_df
+```
+<h4>Let's find another research question about the <b>Count of shooting incidents</b>&<b>Victim's sex group i.e is it male , female or anhter group</b></h4>
+```{r}
+
+ggplot(NYPD_current, aes(x= VIC_SEX, fill= VIC_SEX))+ geom_bar(position = "dodge") + ggtitle("Victim's sex")
+
+
+```
+<h1>Conclusion & BIAS FINDING</h1>
+From my research activity  , if we see the visualizations carefully , we will conclude that Brooklyn has it's highest peak in shooting activites....But if one person in a holiday stay there for a moment , the average person will conclude that<b> Bronx </b> has it's highest report in shooting incidents and criminal activites also .. But it is our personal bias .. One Person Should not make decision about his own feelings ,, They must take decisions in a statistical data driven way... So, that, We reduce the bias of the data analysis 
+<h1>References/citation </h1>
+[1](2022). CU_DTSA_ASSIGNMENT. Ndaniel455. https://github.com/Ndaniel455/CU-DTSA/blob/main/DTSA_5301-100_NYPD_Shooting_Incident_Data_(Historic).Rmd
+[2]korkridake (n.d.). NYPD Shooting Data. Github. https://github.com/korkridake/nypdshooting/blob/main/code/NYPD%20Shooting%20Incident%20Data%20Report.Rmd
+[3]Neil Mascarenhas (n.d.). NYPD Shooting Data. Github. https://github.com/mascarenhasneil/NYPD_Shooting_Analytics/blob/main/docs/index.html
+[4]Rusho, M. A. (n.d.). NYPD Shooting Data. Github. https://github.com/geniusrusho/NYPD.RMD/blob/master/NYPD.Rmd#L100
+
+
+
+
+
+
+
